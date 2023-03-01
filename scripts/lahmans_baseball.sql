@@ -16,10 +16,33 @@ FROM batting;
 --1871 - 2016
 
 
-
-
-
 -- Find the name and height of the shortest player in the database. How many games did he play in? What is the name of the team for which he played?
+
+
+
+SELECT 
+	p.namefirst || ' ' || p.namelast as name,
+	MIN(height) as shortest_height,
+	(SELECT COUNT(g)
+	FROM batting 
+	WHERE playerid = 'gaedeed01') as game_count,
+	t.name as team_name
+FROM people as p
+JOIN batting as b
+USING(playerid)
+JOIN teams as t
+USING(teamid)
+WHERE playerid = 'gaedeed01'
+GROUP BY p.namefirst, p.namelast, height, teamid, team_name
+
+
+
+
+
+
+
+
+
 
 -- Find all players in the database who played at Vanderbilt University. Create a list showing each player’s first and last names as well as the total salary they earned in the major leagues. Sort this list in descending order by the total salary earned. Which Vanderbilt player earned the most money in the majors?
 
