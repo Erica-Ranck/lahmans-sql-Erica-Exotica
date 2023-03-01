@@ -55,19 +55,19 @@ GROUP BY p.playerid
 ORDER BY total_salary DESC;
 
 
-
-
-
-SELECT COUNT(DISTINCT playerid)
-FROM collegeplaying
-WHERE schoolid = 'vandy'
---OUTPUT 
-24
-
-
-
-
 -- Using the fielding table, group players into three groups based on their position: label players with position OF as "Outfield", those with position "SS", "1B", "2B", and "3B" as "Infield", and those with position "P" or "C" as "Battery". Determine the number of putouts made by each of these three groups in 2016.
+
+
+SELECT 
+	CASE WHEN pos = 'OF' THEN 'Outfield'
+	WHEN pos IN ('SS', '1B', '2B', '3B') THEN 'Infield'
+	ELSE 'Battery' END AS position,
+	SUM(po) total_putout
+FROM fielding
+WHERE yearid = 2016
+GROUP BY position
+
+
 
 -- Find the average number of strikeouts per game by decade since 1920. Round the numbers you report to 2 decimal places. Do the same for home runs per game. Do you see any trends?
 
