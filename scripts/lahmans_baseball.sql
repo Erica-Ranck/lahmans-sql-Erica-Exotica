@@ -37,14 +37,35 @@ GROUP BY p.namefirst, p.namelast, height, teamid, team_name
 
 
 
-
-
-
-
-
-
-
 -- Find all players in the database who played at Vanderbilt University. Create a list showing each player’s first and last names as well as the total salary they earned in the major leagues. Sort this list in descending order by the total salary earned. Which Vanderbilt player earned the most money in the majors?
+
+SELECT 
+	DISTINCT p.playerid,
+	namefirst,
+	namelast,
+	SUM(salary) as total_salary
+FROM people as p
+JOIN salaries
+USING(playerid)
+WHERE playerid IN
+	(SELECT DISTINCT playerid
+	FROM collegeplaying 
+	WHERE schoolid = 'vandy')
+GROUP BY p.playerid
+ORDER BY total_salary DESC;
+
+
+
+
+
+SELECT COUNT(DISTINCT playerid)
+FROM collegeplaying
+WHERE schoolid = 'vandy'
+--OUTPUT 
+24
+
+
+
 
 -- Using the fielding table, group players into three groups based on their position: label players with position OF as "Outfield", those with position "SS", "1B", "2B", and "3B" as "Infield", and those with position "P" or "C" as "Battery". Determine the number of putouts made by each of these three groups in 2016.
 
