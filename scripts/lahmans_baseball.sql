@@ -68,8 +68,16 @@ WHERE yearid = 2016
 GROUP BY position
 
 
-
 -- Find the average number of strikeouts per game by decade since 1920. Round the numbers you report to 2 decimal places. Do the same for home runs per game. Do you see any trends?
+
+SELECT 
+	yearID,
+	SUM(SO+SOA)/SUM(G) as strikeouts_per_game,
+	SUM(HR+HRA)/SUM(G) as homeruns_per_game
+FROM teams
+WHERE yearID >= 1920
+GROUP BY yearID
+ORDER BY yearID
 
 -- Find the player who had the most success stealing bases in 2016, where success is measured as the percentage of stolen base attempts which are successful. (A stolen base attempt results either in a stolen base or being caught stealing.) Consider only players who attempted at least 20 stolen bases.
 
