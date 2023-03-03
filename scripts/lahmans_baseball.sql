@@ -71,15 +71,32 @@ GROUP BY position
 -- Find the average number of strikeouts per game by decade since 1920. Round the numbers you report to 2 decimal places. Do the same for home runs per game. Do you see any trends?
 
 SELECT 
-	yearID,
-	SUM(SO+SOA)/SUM(G) as strikeouts_per_game,
-	SUM(HR+HRA)/SUM(G) as homeruns_per_game
+	CASE WHEN yearID BETWEEN 1920 AND 1930 THEN '1920s'
+	WHEN yearID BETWEEN 1930 AND 1939 THEN '1930s'
+	WHEN yearID BETWEEN 1940 AND 1949 THEN '1940s'
+	WHEN yearID BETWEEN 1950 AND 1959 THEN '1950s'
+	WHEN yearID BETWEEN 1960 AND 1969 THEN '1960s'
+	WHEN yearID BETWEEN 1970 AND 1979 THEN '1970s'
+	WHEN yearID BETWEEN 1980 AND 1989 THEN '1980s'
+	WHEN yearID BETWEEN 1990 AND 1999 THEN '1990s'
+	WHEN yearID BETWEEN 2000 AND 2009 THEN '2000s'
+	ELSE '2010s' END AS decade,
+	AVG(S   ) as strikeouts_per_game,
+	AVG(CG)/AVG(CG) as homeruns_per_game
 FROM teams
 WHERE yearID >= 1920
-GROUP BY yearID
-ORDER BY yearID
+GROUP BY decade
+ORDER BY decade
+
+SELECT * 
+FROM teams
+
+
 
 -- Find the player who had the most success stealing bases in 2016, where success is measured as the percentage of stolen base attempts which are successful. (A stolen base attempt results either in a stolen base or being caught stealing.) Consider only players who attempted at least 20 stolen bases.
+
+SELECT CS
+FROM teams
 
 -- From 1970 – 2016, what is the largest number of wins for a team that did not win the world series? What is the smallest number of wins for a team that did win the world series? Doing this will probably result in an unusually small number of wins for a world series champion – determine why this is the case. Then redo your query, excluding the problem year. How often from 1970 – 2016 was it the case that a team with the most wins also won the world series? What percentage of the time?
 
