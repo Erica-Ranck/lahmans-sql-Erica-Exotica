@@ -111,28 +111,27 @@ LIMIT 1;
 
 -- From 1970 – 2016, what is the largest number of wins for a team that did not win the world series? What is the smallest number of wins for a team that did win the world series? Doing this will probably result in an unusually small number of wins for a world series champion – determine why this is the case. Then redo your query, excluding the problem year. How often from 1970 – 2016 was it the case that a team with the most wins also won the world series? What percentage of the time?
 
---greats wins not winning worldseries
-SELECT 
-	teamid,
-	w as greatest_wins_nows
-FROM teams
-WHERE wswin = 'N'
-AND yearid BETWEEN '1970' AND '2016'
-ORDER BY greatest_wins_nows DESC
-LIMIT 1;
+WITH most_wins_no_ws AS (SELECT name, w, wswin, yearid
+					 FROM teams
+					 WHERE yearid BETWEEN 1970 AND 2016
+					 	   AND wswin = 'N'
+					 	   AND yearid <> 1981
+					 ORDER BY w DESC
+					 LIMIT 1),
+	 least_wins_ws AS (SELECT name, w, wswin, yearid
+				   FROM teams
+				   WHERE yearid BETWEEN 1970 AND 2016
+				   	   	 AND wswin = 'Y'
+					 	 AND yearid <> 1981
+				   ORDER BY w
+				   LIMIT 1)
+SELECT *
+FROM most_wins_no_ws
+UNION ALL
+SELECT *
+FROM least_wins_ws;
 
---least wins, winning world series
-SELECT 
-	teamid,
-	w as least_wins_ws
-FROM teams
-WHERE wswin = 'Y'
-AND yearid BETWEEN '1970' AND '2016'
-AND yearid <> '1981'
-ORDER BY least_wins_ws
-LIMIT 1
-
---below query is reviewing all years to get an idea of a normal range of WS wins, I see 1981 is much lower than the rest of the year
+--below query is reviewing all years to get an idea of a normal range of WS wins, I see 1981 is much lower than the rest of the year so it should be removed from main query above
 SELECT 
 	yearid,
 	teamid,
@@ -143,16 +142,19 @@ AND yearid BETWEEN '1970' AND '2016'
 ORDER BY yearid
 
 -- How often from 1970 – 2016 was it the case that a team with the most wins also won the world series? What percentage of the time?
-SELECT 
-	teamid,
-	w as wins,
-	wswin
-FROM teams
-WHERE yearid BETWEEN '1970' AND '2016'
-AND yearid <> '1981'
-ORDER BY wins DESC
 
-
+WITH ws_wins AS (SELECT name, w, wswin, yearid
+					 FROM teams
+					 WHERE yearid BETWEEN 1970 AND 2016
+					 	   AND wswin = 'Y'
+					 ORDER BY w DESC),
+	 most_wins AS (SELECT MAX(w) AS w, yearid
+				   FROM teams
+				   WHERE yearid BETWEEN 1970 AND 2016
+				   GROUP BY yearid)
+SELECT 2016-1970 AS total_seasons, COUNT(*) AS most_win_ws, (COUNT(*)::float/(2016-1970)::float)*100 AS pct_ws_most
+FROM most_wins INNER JOIN ws_wins USING(yearid)
+WHERE most_wins.w = ws_wins.w;
 
 
 
