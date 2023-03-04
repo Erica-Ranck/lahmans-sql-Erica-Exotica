@@ -69,32 +69,7 @@ GROUP BY position
 
 
 -- Find the average number of strikeouts per game by decade since 1920. Round the numbers you report to 2 decimal places. Do the same for home runs per game. Do you see any trends?
-WITH cte AS( 
-SELECT 
-	yearID,
-	SUM(CG) AS completegames,
-	SUM(SO) AS strikeouts, 
-	SUM(HR) AS homeruns
-FROM teams
-GROUP BY yearID
-)
-SELECT 
-	CASE WHEN yearID BETWEEN 1920 AND 1930 THEN '1920s'
-	WHEN yearID BETWEEN 1930 AND 1939 THEN '1930s'
-	WHEN yearID BETWEEN 1940 AND 1949 THEN '1940s'
-	WHEN yearID BETWEEN 1950 AND 1959 THEN '1950s'
-	WHEN yearID BETWEEN 1960 AND 1969 THEN '1960s'
-	WHEN yearID BETWEEN 1970 AND 1979 THEN '1970s'
-	WHEN yearID BETWEEN 1980 AND 1989 THEN '1980s'
-	WHEN yearID BETWEEN 1990 AND 1999 THEN '1990s'
-	WHEN yearID BETWEEN 2000 AND 2009 THEN '2000s'
-	ELSE '2010s' END AS decade,
-	(strikeouts/completegames) as strikeouts_per_game,
-	(homeruns/completegames) as homeruns_per_game
-FROM cte
-WHERE yearID >= 1920
-GROUP BY decade
-ORDER BY decade
+
 
 SELECT 
 	CASE WHEN yearID BETWEEN 1920 AND 1929 THEN '1920s'
@@ -128,6 +103,14 @@ FROM batting
 WHERE yearid = 2016
 GROUP BY playerid, sb, cs
 ORDER BY steal DESC
+
+SELECT 
+	playerid, 
+	SUM(sb) / SUM(sb+cs) OVER(PARTITION BY playerid) as perc_stolen
+FROM batting
+WHERE yearid = 2016
+GROUP BY playerid
+
 
 
 SELECT 
