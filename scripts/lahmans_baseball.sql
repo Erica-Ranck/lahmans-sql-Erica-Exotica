@@ -111,6 +111,51 @@ LIMIT 1;
 
 -- From 1970 – 2016, what is the largest number of wins for a team that did not win the world series? What is the smallest number of wins for a team that did win the world series? Doing this will probably result in an unusually small number of wins for a world series champion – determine why this is the case. Then redo your query, excluding the problem year. How often from 1970 – 2016 was it the case that a team with the most wins also won the world series? What percentage of the time?
 
+--greats wins not winning worldseries
+SELECT 
+	teamid,
+	w as greatest_wins_nows
+FROM teams
+WHERE wswin = 'N'
+AND yearid BETWEEN '1970' AND '2016'
+ORDER BY greatest_wins_nows DESC
+LIMIT 1;
+
+--least wins, winning world series
+SELECT 
+	teamid,
+	w as least_wins_ws
+FROM teams
+WHERE wswin = 'Y'
+AND yearid BETWEEN '1970' AND '2016'
+AND yearid <> '1981'
+ORDER BY least_wins_ws
+LIMIT 1
+
+--below query is reviewing all years to get an idea of a normal range of WS wins, I see 1981 is much lower than the rest of the year
+SELECT 
+	yearid,
+	teamid,
+	w as least_wins_ws
+FROM teams
+WHERE wswin = 'Y'
+AND yearid BETWEEN '1970' AND '2016'
+ORDER BY yearid
+
+-- How often from 1970 – 2016 was it the case that a team with the most wins also won the world series? What percentage of the time?
+SELECT 
+	teamid,
+	w as wins,
+	wswin
+FROM teams
+WHERE yearid BETWEEN '1970' AND '2016'
+AND yearid <> '1981'
+ORDER BY wins DESC
+
+
+
+
+
 -- Using the attendance figures from the homegames table, find the teams and parks which had the top 5 average attendance per game in 2016 (where average attendance is defined as total attendance divided by number of games). Only consider parks where there were at least 10 games played. Report the park name, team name, and average attendance. Repeat for the lowest 5 average attendance.
 
 -- Which managers have won the TSN Manager of the Year award in both the National League (NL) and the American League (AL)? Give their full name and the teams that they were managing when they won the award.
