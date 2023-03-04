@@ -17,9 +17,6 @@ FROM batting;
 
 
 -- Find the name and height of the shortest player in the database. How many games did he play in? What is the name of the team for which he played?
-
-
-
 SELECT 
 	p.namefirst || ' ' || p.namelast as name,
 	MIN(height) as shortest_height,
@@ -34,7 +31,6 @@ JOIN teams as t
 USING(teamid)
 WHERE playerid = 'gaedeed01'
 GROUP BY p.namefirst, p.namelast, height, teamid, team_name
-
 
 
 -- Find all players in the database who played at Vanderbilt University. Create a list showing each player’s first and last names as well as the total salary they earned in the major leagues. Sort this list in descending order by the total salary earned. Which Vanderbilt player earned the most money in the majors?
@@ -94,7 +90,7 @@ ORDER BY decade
 -- Find the player who had the most success stealing bases in 2016, where success is measured as the percentage of stolen base attempts which are successful. (A stolen base attempt results either in a stolen base or being caught stealing.) Consider only players who attempted at least 20 stolen bases.
 
 SELECT 
-	CONCAT(namefirst, ' ', namelast) as name,
+	namefirst || ' ' || namelast) as name,
 	SUM(sb) as stolenbases,
 	SUM(cs) as caughtstealing,
 	sum(sb+cs) as attempts,
@@ -109,7 +105,7 @@ ORDER BY perc_stolen DESC
 LIMIT 1;
 
 
--- From 1970 – 2016, what is the largest number of wins for a team that did not win the world series? What is the smallest number of wins for a team that did win the world series? Doing this will probably result in an unusually small number of wins for a world series champion – determine why this is the case. Then redo your query, excluding the problem year. How often from 1970 – 2016 was it the case that a team with the most wins also won the world series? What percentage of the time?
+-- From 1970 – 2016, what is the largest number of wins for a team that did not win the world series? What is the smallest number of wins for a team that did win the world series? Doing this will probably result in an unusually small number of wins for a world series champion – determine why this is the case. Then redo your query, excluding the problem year. 
 
 WITH most_wins_no_ws AS (SELECT name, w, wswin, yearid
 					 FROM teams
@@ -174,9 +170,68 @@ GROUP BY park_name, t.name, h.attendance, h.games, year, h.park
 ORDER BY avg_attendance DESC
 LIMIT 5;
 
-	
-
 
 -- Which managers have won the TSN Manager of the Year award in both the National League (NL) and the American League (AL)? Give their full name and the teams that they were managing when they won the award.
+
+WITH nl AS ( 
+SELECT 
+	*
+FROM awardsmanagers
+WHERE awardid = 'TSN Manager of the Year'
+AND lgid = 'NL'
+),
+al AS (
+SELECT 
+	*
+FROM awardsmanagers
+WHERE awardid = 'TSN Manager of the Year'
+AND lgid = 'AL'
+)
+SELECT 
+	n.playerid,
+	n.awardid,
+	n.lgid,
+	a.lgid,
+	n.yearid
+FROM nl as n
+JOIN al as a
+USING(playerid)
+
+
+
+WITH moty AS (
+	SELECT 
+		playerid, 
+		awardid, 
+ 		COUNT(DISTINCT lgid) AS lg_count
+FROM awardsmanagers
+WHERE awardid = 'TSN Manager of the Year'
+	AND lgid IN ('NL', 'AL')
+GROUP BY playerid, awardid
+HAVING COUNT(DISTINCT lgid) = 2
+),
+mngr_full AS (
+	SELECT 
+		playerid, 
+		awardid, 
+		lg_count, 
+		yearid, 
+		lgid
+	FROM moty INNER JOIN awardsmanagers USING(playerid, awardid))
+SELECT 
+	DISTINCT namegiven, 
+	namelast, 
+	name AS team_name, 
+	mngr_full.lgid, 
+	mngr_full.yearid
+FROM mngr_full 
+INNER JOIN people 
+USING(playerid)
+INNER JOIN managers 
+USING(playerid, yearid, lgid)
+INNER JOIN teams ON mngr_full.yearid = teams.yearid 
+AND mngr_full.lgid = teams.lgid
+AND managers.teamid = teams.teamid;
+
 
 -- Find all players who hit their career highest number of home runs in 2016. Consider only players who have played in the league for at least 10 years, and who hit at least one home run in 2016. Report the players' first and last names and the number of home runs they hit in 2016.
