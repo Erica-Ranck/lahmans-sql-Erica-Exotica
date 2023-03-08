@@ -90,7 +90,7 @@ ORDER BY decade
 -- Find the player who had the most success stealing bases in 2016, where success is measured as the percentage of stolen base attempts which are successful. (A stolen base attempt results either in a stolen base or being caught stealing.) Consider only players who attempted at least 20 stolen bases.
 
 SELECT 
-	namefirst || ' ' || namelast) as name,
+	namefirst || ' ' || namelast as name,
 	SUM(sb) as stolenbases,
 	SUM(cs) as caughtstealing,
 	sum(sb+cs) as attempts,
@@ -148,7 +148,10 @@ WITH ws_wins AS (SELECT name, w, wswin, yearid
 				   FROM teams
 				   WHERE yearid BETWEEN 1970 AND 2016
 				   GROUP BY yearid)
-SELECT 2016-1970 AS total_seasons, COUNT(*) AS most_win_ws, ROUND((COUNT(*)::numeric/(2016-1970)::numeric)*100,2) AS pct_ws_most
+SELECT 
+	2016-1970 AS total_seasons, 
+	COUNT(*) AS most_win_ws, 
+	ROUND((COUNT(*)::numeric/(2016-1970)::numeric)*100,2) AS pct_ws_most
 FROM most_wins INNER JOIN ws_wins USING(yearid)
 WHERE most_wins.w = ws_wins.w;
 
@@ -171,7 +174,7 @@ ORDER BY avg_attendance DESC
 LIMIT 5;
 
 
--- Which managers have won the TSN Manager of the Year award in both the National League (NL) and the American League (AL)? Give their full name and the teams that they were managing when they won the award.
+-- Which managers have won the TSN Manager of the Year award in both the National League (NL) and the American League (AL)? 
 
 WITH nl AS ( 
 SELECT 
@@ -197,7 +200,7 @@ FROM nl as n
 JOIN al as a
 USING(playerid)
 
-
+-- Give their full name and the teams that they were managing when they won the award.
 
 WITH moty AS (
 	SELECT 
@@ -235,3 +238,23 @@ AND managers.teamid = teams.teamid;
 
 
 -- Find all players who hit their career highest number of home runs in 2016. Consider only players who have played in the league for at least 10 years, and who hit at least one home run in 2016. Report the players' first and last names and the number of home runs they hit in 2016.
+
+SELECT *
+FROM batting
+
+SELECT 
+	yearid,
+	playerid,
+	hr
+FROM batting
+WHERE hr >= 1
+
+
+SELECT
+	yearid,
+	playerid,
+	SUM(hr)
+FROM batting
+WHERE hr > 0
+GROUP BY yearid, playerid
+
