@@ -66,18 +66,7 @@ GROUP BY position
 
 -- Find the average number of strikeouts per game by decade since 1920. Round the numbers you report to 2 decimal places. Do the same for home runs per game. Do you see any trends?
 
-
-SELECT 
-	CASE WHEN yearID BETWEEN 1920 AND 1929 THEN '1920s'
-	WHEN yearID BETWEEN 1930 AND 1939 THEN '1930s'
-	WHEN yearID BETWEEN 1940 AND 1949 THEN '1940s'
-	WHEN yearID BETWEEN 1950 AND 1959 THEN '1950s'
-	WHEN yearID BETWEEN 1960 AND 1969 THEN '1960s'
-	WHEN yearID BETWEEN 1970 AND 1979 THEN '1970s'
-	WHEN yearID BETWEEN 1980 AND 1989 THEN '1980s'
-	WHEN yearID BETWEEN 1990 AND 1999 THEN '1990s'
-	WHEN yearID BETWEEN 2000 AND 2009 THEN '2000s'
-	ELSE '2010s' END AS decade,
+SELECT yearid/10*10 as decade,
 	ROUND(SUM(SO)::NUMERIC/SUM(G/2)::NUMERIC,2) as strikeouts_per_game,
 	ROUND(SUM(HR)::NUMERIC/SUM(G/2)::NUMERIC,2) as homeruns_per_game
 FROM teams
@@ -239,22 +228,35 @@ AND managers.teamid = teams.teamid;
 
 -- Find all players who hit their career highest number of home runs in 2016. Consider only players who have played in the league for at least 10 years, and who hit at least one home run in 2016. Report the players' first and last names and the number of home runs they hit in 2016.
 
-SELECT *
-FROM batting
 
+
+SELECT yearid,
+	   playerid,
+	   hr,
+	   LAG(hr) OVER (PARTITION BY playerid ORDER BY yearid) AS prev_yr_hr,
+	   LEAD(hr) OVER (PARTITION BY playerid ORDER BY yearid) AS next_yr_hr
+FROM batting
+ORDER BY playerid, yearid
+
+
+
+WITH tn_schools AS (SELECT schoolname, schoolid
+					FROM schools
+					WHERE schoolstate = 'TN'
+					GROUP BY schoolname, schoolid)
 SELECT 
-	yearid,
-	playerid,
-	hr
-FROM batting
-WHERE hr >= 1
+	schoolname, 
+	COUNT(DISTINCT playerid) AS player_count, 
+	SUM(salary)::text::money AS total_salary, 
+	(SUM(salary)/COUNT(DISTINCT playerid))::text::money AS money_per_player
+FROM tn_schools 
+INNER JOIN collegeplaying
+USING(schoolid)
+INNER JOIN people 
+USING(playerid)
+INNER JOIN salaries
+USING(playerid)
+GROUP BY schoolname
+ORDER BY money_per_player DESC;
 
-
-SELECT
-	yearid,
-	playerid,
-	SUM(hr)
-FROM batting
-WHERE hr > 0
-GROUP BY yearid, playerid
 
