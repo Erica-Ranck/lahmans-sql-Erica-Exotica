@@ -138,29 +138,51 @@ WITH ws_wins AS (SELECT name, w, wswin, yearid
 				   WHERE yearid BETWEEN 1970 AND 2016
 				   GROUP BY yearid)
 SELECT 
-	2016-1970 AS total_seasons, 
+	2016-1970 AS total_szns, 
 	COUNT(*) AS most_win_ws, 
 	ROUND((COUNT(*)::numeric/(2016-1970)::numeric)*100,2) AS pct_ws_most
-FROM most_wins INNER JOIN ws_wins USING(yearid)
+FROM most_wins 
+INNER JOIN ws_wins 
+USING(yearid)
 WHERE most_wins.w = ws_wins.w;
 
 
 -- Using the attendance figures from the homegames table, find the teams and parks which had the top 5 average attendance per game in 2016 (where average attendance is defined as total attendance divided by number of games). Only consider parks where there were at least 10 games played. Report the park name, team name, and average attendance. Repeat for the lowest 5 average attendance.
 
-SELECT 
-	p.park_name,
-	t.name,
-	sum(h.attendance)/h.games as avg_attendance
-FROM homegames as h
-LEFT JOIN parks AS p
-ON h.park = p.park
-LEFT JOIN teams as t
-ON h.team = t.teamid
-WHERE games >= 10
-AND year = 2016
-GROUP BY park_name, t.name, h.attendance, h.games, year, h.park
+
+WITH avg_attend AS (
+SELECT park, team, attendance/games AS avg_attendance
+FROM homegames
+WHERE year = 2016
+	AND games >= 10
+),
+avg_attend_full AS (
+SELECT park_name, name as team_name, avg_attendance
+FROM avg_attend 
+INNER JOIN teams 
+	ON avg_attend.team = teams.teamid
+INNER JOIN parks
+	ON avg_attend.park = parks.park
+WHERE teams.yearid = 2016
+GROUP BY park_name, avg_attendance, name
+),
+top_5 AS (
+SELECT *, 'top_5' AS category
+FROM avg_attend_full
 ORDER BY avg_attendance DESC
-LIMIT 5;
+LIMIT 5
+), 
+bottom_5 AS (
+SELECT *, 'bottom_5' AS category
+FROM avg_attend_full
+ORDER BY avg_attendance
+LIMIT 5
+)
+SELECT *
+FROM top_5
+UNION ALL
+SELECT *
+FROM bottom_5;
 
 
 -- Which managers have won the TSN Manager of the Year award in both the National League (NL) and the American League (AL)? 
@@ -229,7 +251,6 @@ AND managers.teamid = teams.teamid;
 -- Find all players who hit their career highest number of home runs in 2016. Consider only players who have played in the league for at least 10 years, and who hit at least one home run in 2016. Report the players' first and last names and the number of home runs they hit in 2016.
 
 
-
 SELECT yearid,
 	   playerid,
 	   hr,
@@ -239,24 +260,5 @@ FROM batting
 ORDER BY playerid, yearid
 
 
-
-WITH tn_schools AS (SELECT schoolname, schoolid
-					FROM schools
-					WHERE schoolstate = 'TN'
-					GROUP BY schoolname, schoolid)
-SELECT 
-	schoolname, 
-	COUNT(DISTINCT playerid) AS player_count, 
-	SUM(salary)::text::money AS total_salary, 
-	(SUM(salary)/COUNT(DISTINCT playerid))::text::money AS money_per_player
-FROM tn_schools 
-INNER JOIN collegeplaying
-USING(schoolid)
-INNER JOIN people 
-USING(playerid)
-INNER JOIN salaries
-USING(playerid)
-GROUP BY schoolname
-ORDER BY money_per_player DESC;
 
 
